@@ -25,6 +25,7 @@ venv/
 # Node / React
 node_modules/
 web-react/dist/
+*.tsbuildinfo
 
 # OS
 .DS_Store
