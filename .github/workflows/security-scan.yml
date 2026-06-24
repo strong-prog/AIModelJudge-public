@@ -21,8 +21,8 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - name: Install dependencies
-        run: pip install ".[dev]"
+      - name: Install tools
+        run: pip install pip-audit cyclonedx-py
       - name: Run pip-audit
         run: pip-audit --requirement pyproject.toml
         continue-on-error: true  # не блокирует CI, только предупреждает

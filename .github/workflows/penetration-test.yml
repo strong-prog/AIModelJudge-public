@@ -32,7 +32,6 @@ jobs:
         with:
           target: http://app:9651
           fail_on_severity: High
-          rules_file_name: ".zap/rules.tsv"
         continue-on-error: true
       - name: Upload ZAP report
         uses: actions/upload-artifact@v4
