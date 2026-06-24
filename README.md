@@ -1,6 +1,8 @@
-# AIModelJudge
+# AIModelJudge — The AI Code Judge
 
-A full-stack AI code analysis platform with multi-model streaming, 3-panel UI, and a 4-phase judge pipeline.
+**AIModelJudge** is a platform that helps developers make better decisions with AI. It runs multiple models simultaneously, compares their answers side-by-side, and delivers a single verified result. Think of it as a "council of experts" for your code.
+
+Ask a question once — get three AI perspectives, watch them reason in real time, and receive a synthesized final answer backed by multiple models.
 
 **Stack:** Python FastAPI + React 18 / TypeScript / Vite + D3.js + SQLite + aiogram (Telegram)
 
@@ -26,8 +28,8 @@ React SPA (:5173 dev, :9651 prod)     FastAPI Backend (:9651)
 
 ### Judge Pipeline
 
-1. **Inquire** — Analyzes the request, decides which models to query
-2. **Consult** — Queries models in parallel (center + up to 2 side panels)
+1. **Analyze** — Determines which models to query and what context they need
+2. **Compare** — Queries models in parallel (center + up to 2 side panels)
 3. **Synthesize** — Tool calls execute and results are collected
 4. **Deliver** — Final response streamed to the user via SSE
 
@@ -166,6 +168,13 @@ python tests/test_isolation.py
 ```
 
 ---
+
+## Who is this for?
+
+- **Developers** — get instant, multi-model code reviews without switching tabs
+- **Teams** — reduce decision fatigue by comparing multiple AI perspectives
+- **Tech leads** — enforce coding standards with custom rules and hooks
+- **Startups** — evaluate which AI model works best for your use case
 
 ## License
 

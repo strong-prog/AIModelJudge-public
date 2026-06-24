@@ -51,3 +51,4 @@ config/hermes/
 # Test artifacts
 .pytest_cache/
 *.log
+tests/screenshots/
