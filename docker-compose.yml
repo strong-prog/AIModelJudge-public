@@ -1,0 +1,81 @@
+# AIModelJudge — production compose
+version: "3.9"
+
+services:
+  app:
+    build: .
+    image: aimodeljudge:latest
+    container_name: aimj-app
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=64M
+    volumes:
+      - state-data:/app/data
+      - vault-data:/home/appuser/.hermes-aimodeljudge
+    environment:
+      - AMJ_ENV=prod
+      - AMJ_ALLOW_PROD=true
+    env_file:
+      - .env
+    networks:
+      - aimj-net
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9651/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: aimj-nginx
+    restart: unless-stopped
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    networks:
+      - aimj-net
+    depends_on:
+      app:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: aimj-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - aimj-net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+
+volumes:
+  state-data:
+  vault-data:
+  prometheus-data:
+
+networks:
+  aimj-net:
+    internal: true

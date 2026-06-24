@@ -1,0 +1,27 @@
+# AIModelJudge — development override
+version: "3.9"
+
+services:
+  app:
+    read_only: false
+    security_opt: []
+    cap_drop: []
+    ports:
+      - "9651:9651"
+    volumes:
+      - ./web:/app/web:ro
+      - ./services:/app/services:ro
+      - state-data:/app/data
+      - vault-data:/home/appuser/.hermes-aimodeljudge
+    environment:
+      - AMJ_ENV=dev
+      - AMJ_ALLOW_PROD=false
+    command: ["python3", "-m", "uvicorn", "web.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "9651", "--reload"]
+
+  nginx:
+    profiles:
+      - production
+
+  prometheus:
+    profiles:
+      - production

@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# CodeGraph index
+.codegraph/
+
+# Memory
+.memory/
+
+# Hermes runtime (sessions, cron output, etc.)
+.hermes/
+
+# Node / React
+node_modules/
+web-react/dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code (local only)
+CLAUDE.md
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Database (local only, contains user data)
+*.db
+*.sqlite3
+state.db
+
+# Hermes infrastructure (external framework, not part of AIModelJudge)
+services/hermes-core/
+config/hermes/
+
+# Test artifacts
+.pytest_cache/
+*.log

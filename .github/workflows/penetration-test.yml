@@ -1,0 +1,116 @@
+# AIModelJudge — OWASP ZAP + Schemathesis Penetration Testing
+name: Penetration Test
+
+on:
+  schedule:
+    - cron: "53 7 * * 6"  # каждую субботу 7:53am UTC
+  workflow_dispatch:  # ручной запуск
+
+jobs:
+  zap-baseline:
+    runs-on: ubuntu-latest
+    services:
+      app:
+        image: aimodeljudge:latest
+        ports:
+          - 9651:9651
+        env:
+          AMJ_ENV: test
+          AMJ_ALLOW_PROD: "true"
+          AMJ_JWT_SECRET: "test-secret-for-zap-scan-0123456789ab"
+        options: >-
+          --health-cmd "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:9651/health')\""
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build app image
+        run: docker build -t aimodeljudge:latest .
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: http://app:9651
+          fail_on_severity: High
+          rules_file_name: ".zap/rules.tsv"
+        continue-on-error: true
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: |
+            zap.out
+            report_html.html
+            report_md.md
+          retention-days: 30
+
+  schemathesis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Build app image
+        run: docker build -t aimodeljudge:latest .
+      - name: Start app for fuzzing
+        run: |
+          docker run -d --name aimj-fuzz -p 9651:9651 \
+            -e AMJ_ENV=test -e AMJ_ALLOW_PROD=true \
+            -e AMJ_JWT_SECRET="test-secret-for-fuzz-0123456789ab" \
+            aimodeljudge:latest
+          sleep 15
+          curl -f http://localhost:9651/health || (docker logs aimj-fuzz && exit 1)
+      - name: Schemathesis API fuzzing
+        run: |
+          pip install schemathesis
+          # Wait for app & fetch OpenAPI spec
+          curl -s http://localhost:9651/openapi.json -o openapi.json
+          st run --checks all http://localhost:9651/openapi.json \
+            --max-response-time 5000 \
+            --hypothesis-max-examples 50 \
+            --workers 2 \
+            --report output.json || true
+      - name: Upload Schemathesis report
+        uses: actions/upload-artifact@v4
+        with:
+          name: schemathesis-report
+          path: output.json
+          retention-days: 30
+      - name: Cleanup
+        if: always()
+        run: docker rm -f aimj-fuzz
+
+  supply-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dev dependencies
+        run: pip install pip-audit cyclonedx-py
+      - name: Run pip-audit (CVE scan)
+        run: pip-audit --requirement pyproject.toml
+        continue-on-error: true
+      - name: Generate SBOM
+        run: |
+          cyclonedx-py requirements pyproject.toml -o sbom.json
+          cyclonedx-py --version || true
+      - name: Verify SLSA provenance
+        run: |
+          # Check GH Actions attestation if available
+          if command -v slsa-verifier &>/dev/null; then
+            slsa-verifier verify-artifact --source-uri github.com/strong-prog/AIModelJudge sbom.json
+          else
+            echo "slsa-verifier not installed — skip provenance check"
+          fi
+        continue-on-error: true
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-w12
+          path: sbom.json
+          retention-days: 90
