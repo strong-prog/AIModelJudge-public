@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-local-agent"
+version = "0.1.0"
+description = "Local agent for AIModelJudge — executes tools on developer's machine"
+requires-python = ">=3.10"
+dependencies = [
+    "websockets>=12.0",
+]
+
+[project.scripts]
+hermes-local-agent = "main:main"
+
+[tool.setuptools.packages.find]
+include = ["*.py"]

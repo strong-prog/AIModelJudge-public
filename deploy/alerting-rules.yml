@@ -1,0 +1,86 @@
+# Prometheus Alerting Rules
+# Настройка: скопировать в /etc/prometheus/rules/aimodeljudge.yml
+# Проверка: promtool check rules /etc/prometheus/rules/aimodeljudge.yml
+
+groups:
+  - name: aimodeljudge
+    interval: 30s
+    rules:
+      # ── Availability ──
+      - alert: ServiceDown
+        expr: up{job="aimodeljudge"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AIModelJudge is DOWN"
+          description: "Health endpoint unreachable for > 2m on {{ $labels.instance }}"
+
+      - alert: HighErrorRate
+        expr: |
+          rate(amj_chat_requests_total{status="error"}[5m]) /
+          rate(amj_chat_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on AIModelJudge"
+          description: "Error rate is {{ $value | humanizePercentage }} over last 5m"
+
+      # ── Latency ──
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(amj_chat_duration_seconds_bucket[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High p95 latency on AIModelJudge"
+          description: "p95 latency is {{ $value }}s over last 5m"
+
+      - alert: ExtremeLatency
+        expr: histogram_quantile(0.99, rate(amj_chat_duration_seconds_bucket[5m])) > 60
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Extreme p99 latency on AIModelJudge"
+          description: "p99 latency is {{ $value }}s over last 5m"
+
+      # ── Resources ──
+      - alert: HighMemoryUsage
+        expr: amj_system_memory_maxrss_bytes / 1024 / 1024 / 1024 > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on AIModelJudge"
+          description: "Memory usage > 80% on {{ $labels.instance }}"
+
+      # ── Security ──
+      - alert: SandboxBlockSpike
+        expr: rate(amj_sandbox_blocks_total[1m]) > 10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Sandbox blocking spike detected"
+          description: "> 10 sandbox blocks/min — possible attack on {{ $labels.instance }}"
+
+      - alert: PromptGuardBlockSpike
+        expr: rate(amj_prompt_guard_blocks_total[1m]) > 5
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prompt injection attack detected"
+          description: "> 5 prompt guard blocks/min — possible injection attack on {{ $labels.instance }}"
+
+      # ── Certificate ──
+      - alert: SSLCertExpiring
+        expr: probe_ssl_earliest_cert_expiry{job="aimodeljudge"} - time() < 86400 * 7
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "Certificate expires in < 7 days on {{ $labels.instance }}"
