@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIModelJudge — AI-архитектор решений</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-hover: #79c0ff;
+    --green: #3fb950;
+    --orange: #d2991d;
+    --purple: #a371f7;
+    --red: #f85149;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+  }
+  .hero .subtitle {
+    font-size: 20px;
+    color: var(--text-muted);
+    max-width: 640px;
+    margin: 0 auto 32px;
+  }
+  .hero .cta {
+    display: inline-flex;
+    gap: 12px;
+  }
+  .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { border-color: var(--text-muted); }
+
+  /* Screenshot */
+  .screenshot {
+    padding: 40px 0 60px;
+    text-align: center;
+  }
+  .screenshot img {
+    max-width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  /* Features */
+  .features {
+    padding: 60px 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    transition: border-color 0.2s;
+  }
+  .feature-card:hover { border-color: var(--accent); }
+  .feature-card .icon { font-size: 32px; margin-bottom: 12px; }
+  .feature-card h3 { font-size: 18px; margin-bottom: 8px; }
+  .feature-card p { color: var(--text-muted); font-size: 14px; }
+
+  /* How it works */
+  .how {
+    padding: 60px 0;
+  }
+  .how h2, .features-section h2, .subscribe-section h2 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 40px;
+  }
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 768px) {
+    .phases { grid-template-columns: repeat(2, 1fr); }
+  }
+  .phase {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+  .phase .num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .phase h4 { font-size: 15px; margin-bottom: 6px; }
+  .phase p { font-size: 13px; color: var(--text-muted); }
+
+  /* Subscribe */
+  .subscribe-section {
+    padding: 60px 0 80px;
+  }
+  .subscribe-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .subscribe-box h3 { font-size: 22px; margin-bottom: 8px; }
+  .subscribe-box p { color: var(--text-muted); margin-bottom: 20px; font-size: 14px; }
+  .subscribe-form {
+    display: flex;
+    gap: 8px;
+  }
+  .subscribe-form input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+  }
+  .subscribe-form input:focus { border-color: var(--accent); }
+  .subscribe-form .btn { padding: 10px 20px; font-size: 14px; }
+  .subscribe-msg { margin-top: 12px; font-size: 13px; min-height: 20px; }
+  .subscribe-msg.success { color: var(--green); }
+  .subscribe-msg.error { color: var(--red); }
+
+  /* Footer */
+  .footer {
+    padding: 40px 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="container">
+    <h1>AIModelJudge</h1>
+    <p class="subtitle">
+      AI-архитектор решений с мультимодельным консилиумом.
+      Четыре нейросети анализируют вашу задачу, советуются и выдают синтезированный вердикт.
+    </p>
+    <div class="cta">
+      <a href="/app/" class="btn btn-primary">Начать бесплатно</a>
+      <a href="#features" class="btn btn-outline">Что внутри</a>
+    </div>
+  </div>
+</section>
+
+<section class="screenshot">
+  <div class="container">
+    <img src="/static/screenshots/aimj-react.png" alt="AIModelJudge интерфейс" loading="lazy">
+  </div>
+</section>
+
+<section class="container" id="features">
+  <div class="features-section">
+    <h2>Возможности</h2>
+  </div>
+  <div class="features">
+    <div class="feature-card">
+      <div class="icon">⚖️</div>
+      <h3>Мультимодельный консилиум</h3>
+      <p>4 модели анализируют запрос параллельно: Inquire → Consult → Synthesize → Deliver. Каждая фаза добавляет глубины анализу.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔧</div>
+      <h3>66+ инструментов</h3>
+      <p>CodeGraph для навигации по коду, Memory MCP для долговременной памяти, WebSearch, Diff Viewer, File Sandbox и другие.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📊</div>
+      <h3>Визуализация решений</h3>
+      <p>Граф навыков D3.js, аналитика токенов и бенчмарков, Kanban-доска для задач — всё в одном интерфейсе.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🤖</div>
+      <h3>Telegram-бот</h3>
+      <p>Отправьте /judge в Telegram и получите полный анализ. Сессии синхронизированы между веб-интерфейсом и ботом.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔐</div>
+      <h3>Security на 99.9%</h3>
+      <p>JWT-авторизация, аудит-лог с HMAC-цепочкой, Prompt Guard от инжекций, Secrets Vault, TLS 1.3, изоляция данных.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📱</div>
+      <h3>PWA — работает как приложение</h3>
+      <p>Установите на телефон или компьютер. Офлайн-доступ к истории сессий, push-уведомления о завершении анализа.</p>
+    </div>
+  </div>
+</section>
+
+<section class="container how">
+  <h2>Как это работает</h2>
+  <div class="phases">
+    <div class="phase">
+      <div class="num">1</div>
+      <h4>Inquire</h4>
+      <p>Модель понимает запрос и решает, какие эксперты нужны</p>
+    </div>
+    <div class="phase">
+      <div class="num">2</div>
+      <h4>Consult</h4>
+      <p>Основная + боковые модели анализируют параллельно</p>
+    </div>
+    <div class="phase">
+      <div class="num">3</div>
+      <h4>Synthesize</h4>
+      <p>Инструменты выполняются, результаты агрегируются</p>
+    </div>
+    <div class="phase">
+      <div class="num">4</div>
+      <h4>Deliver</h4>
+      <p>Финальный вердикт стримится пользователю</p>
+    </div>
+  </div>
+</section>
+
+<section class="subscribe-section" id="subscribe">
+  <div class="container">
+    <div class="subscribe-box">
+      <h3>Узнайте о запуске первым</h3>
+      <p>Оставьте email — пришлём приглашение и ранний доступ.</p>
+      <form class="subscribe-form" id="subscribeForm">
+        <input type="email" id="subscribeEmail" placeholder="your@email.com" required>
+        <button type="submit" class="btn btn-primary">Подписаться</button>
+      </form>
+      <div class="subscribe-msg" id="subscribeMsg"></div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <p>
+      <a href="/app/">Войти в AIModelJudge</a> &middot;
+      <a href="/docs">API документация</a> &middot;
+      <a href="https://github.com/strong-prog/AIModelJudge">GitHub</a>
+    </p>
+    <p style="margin-top:8px">&copy; 2026 AIModelJudge</p>
+  </div>
+</footer>
+
+<script>
+document.getElementById('subscribeForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('subscribeEmail').value.trim();
+  const msg = document.getElementById('subscribeMsg');
+  msg.className = 'subscribe-msg';
+  msg.textContent = '';
+
+  if (!email || !email.includes('@')) {
+    msg.className = 'subscribe-msg error';
+    msg.textContent = 'Введите корректный email';
+    return;
+  }
+
+  try {
+    const res = await fetch('/email/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, source: 'landing' }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      msg.className = 'subscribe-msg success';
+      msg.textContent = data.message || 'Готово! Проверьте почту.';
+      document.getElementById('subscribeEmail').value = '';
+    } else {
+      msg.className = 'subscribe-msg error';
+      msg.textContent = data.error || 'Ошибка. Попробуйте позже.';
+    }
+  } catch {
+    msg.className = 'subscribe-msg error';
+    msg.textContent = 'Сетевая ошибка. Попробуйте позже.';
+  }
+});
+</script>
+
+</body>
+</html>
